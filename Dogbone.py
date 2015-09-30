@@ -1,11 +1,9 @@
-#Author-Casey Rogers
+#Author-Casey Rogers and Patrick Rainsberry
 #Description-An Add-In for making dog-bone fillets.
+
 #Select edges interior to 90 degree angles. Specify a tool diameter and a radial offset. The add-in will then create a dog-bone with diamater equal to the tool diameter plus
 #twice the offset (as the offset is applied to the radius) at each selected edge.
-#Select edges interior to 90 degree angles. Specify a tool diameter and a radial offset. The add-in will then create a dog-bone with diamater equal to the tool diameter plus
-#twice the offset (as the offset is applied to the radius) at each selected edge.
-#Select edges interior to 90 degree angles. Specify a tool diameter and a radial offset. The add-in will then create a dog-bone with diamater equal to the tool diameter plus
-#twice the offset (as the offset is applied to the radius) at each selected edge.
+#Alternatively, select an entire body and the add-in will automatically apply a dog-bone to all interior vertical edges
 
 # Version 1
 # Current Functionality:
@@ -13,8 +11,6 @@
 # The add-in will then create a dogbone with diamater equal to the tool diameter plus
 # twice the offset (as the offset is applied to the radius) at each selected edge.
 
-#Known Bugs:
-#The add-in's custom icon is not displaying in the user interface.
 
 import adsk.core, adsk.fusion, traceback
 import math
@@ -89,7 +85,7 @@ def run(context):
                 initialVal = adsk.core.ValueInput.createByReal(0)
                 inputs.addValueInput('offset', 'Radial Offset', product.unitsManager.defaultLengthUnits, initialVal)
 
-        
+
                 # Connect up to command related events.
                 onExecute = CommandExecutedHandler()
                 cmd.execute.add(onExecute)
@@ -98,7 +94,7 @@ def run(context):
                 onValidateInputs = ValidateInputsHandler()
                 cmd.validateInputs.add(onValidateInputs)
                 handlers.append(onValidateInputs)
-        
+
         class CommandExecutedHandler(adsk.core.CommandEventHandler):
             def __init__(self):
                 super().__init__()
@@ -113,7 +109,7 @@ def run(context):
                     # Get the data and settings from the command inputs.
                     offStr = None
                     for input in command.commandInputs:
-                        if input.id == 'circDiameter': 
+                        if input.id == 'circDiameter':
                             circStr = input.expression
                             circVal = input.value
                         elif input.id == 'offset':
@@ -165,7 +161,7 @@ def run(context):
                 except:
                     if ui:
                         ui.messageBox('command executed failed:\n{}'.format(traceback.format_exc()))
-                        
+
         class ValidateInputsHandler(adsk.core.ValidateInputsEventHandler):
             def __init__(self):
                 super().__init__()
@@ -175,7 +171,7 @@ def run(context):
                 try:
                     # Get the command.
                     cmd = args.firingEvent.sender
-        
+
                     # Check that two selections are satisfied.
                     for input in cmd.commandInputs:
                         if input.id == 'edgeSelect':
@@ -194,31 +190,31 @@ def run(context):
 
         #add add-in to UI
         cmdDefs = ui.commandDefinitions
-        buttonDogbone = cmdDefs.addButtonDefinition('dogboneBtn', 'Dogbone', 'Creates a dogbone at the corner of two lines/edges')
-        
+        buttonDogbone = cmdDefs.addButtonDefinition('dogboneBtn', 'Dogbone', 'Creates a dogbone at the corner of two lines/edges', 'Resources')
+
         dogboneCommandCreated = dogboneCommandCreatedEventHandler()
         buttonDogbone.commandCreated.add(dogboneCommandCreated)
         handlers.append(dogboneCommandCreated)
 
         createPanel = ui.allToolbarPanels.itemById('SolidCreatePanel')
-        
+
         buttonControl = createPanel.controls.addCommand(buttonDogbone, 'dogboneBtn')
-        
+
         # Make the button available in the panel.
         buttonControl.isPromotedByDefault = True
         buttonControl.isPromoted = True
-    
+
     except:
         if ui:
             ui.messageBox('Failed:\n{}'.format(traceback.format_exc()))
-            
+
 
 def stop(context):
     ui = None
     try:
         app = adsk.core.Application.get()
         ui  = app.userInterface
-        
+
         cmdDef = ui.commandDefinitions.itemById('dogboneBtn')
         if cmdDef:
             cmdDef.deleteMe()
@@ -242,7 +238,7 @@ def findPoints(edge0, edge1):
         point0_0 = edge0.startVertex
         point0_1 = edge0.endVertex
         point1_0 = edge1.startVertex
-        point1_1 = edge1.endVertex  
+        point1_1 = edge1.endVertex
     if (point0_0 == point1_0):
         pointA = point0_0
         pointB = point0_1
@@ -261,7 +257,7 @@ def findPoints(edge0, edge1):
         pointC = point1_0
     else:
         return False
-            
+
     return pointA, pointB, pointC
 
 # Return MIDPOINT of LINE
@@ -308,14 +304,14 @@ def createDogbone(circStr, circVal, edge, offStr):
         rootComp = design.rootComponent
         sketches = rootComp.sketches
         planes = rootComp.constructionPlanes
-        
+
         # Find two edges that form the corner to be filleted
         edgeTuple = findCorner(edge)
         if not edgeTuple:
             adsk.core.Application.get().userInterface.messageBox('non-adjacent edges')
             return
         edge0, edge1 = edgeTuple[0], edgeTuple[1]
-            
+
         #create a plane on one end of the interior edge
         inputPlane = planes.createInput() #add occurence handling
         tf = inputPlane.setByDistanceOnPath(edge, adsk.core.ValueInput.createByReal(0))
@@ -326,21 +322,21 @@ def createDogbone(circStr, circVal, edge, offStr):
         # Record the timeline index of the first feature createDogbone makes
         startIndex = plane.timelineObject.index
         inputPlane = None
-        
+
         #create a sketch and project the dogbone's corner onto the sketch
         sketch = sketches.add(plane)
         line1 = sketch.project(edge0)
         line2 = sketch.project(edge1)
         line1 = line1.item(0)
         line2 = line2.item(0)
-        
+
         lines = sketch.sketchCurves.sketchLines
         constraints = sketch.geometricConstraints
         circles = sketch.sketchCurves.sketchCircles
-        
+
         #create dogbone sketch
         pointTuple = findPoints(line1, line2)
-        if not pointTuple:   
+        if not pointTuple:
             adsk.core.Application.get().userInterface.messageBox('non-adjacent edges')
             return
         # This is a temporary point for our Dogbone sketch's centerline to end at
@@ -358,11 +354,11 @@ def createDogbone(circStr, circVal, edge, offStr):
         if offStr == "0.00 mm":
             length.parameter.expression = circStr +  "/ 2"
         else:
-            length.parameter.expression = circStr +  "/ 2 + " + offStr 
+            length.parameter.expression = circStr +  "/ 2 + " + offStr
         # Create the dogbone's profile
         circle = circles.addByCenterRadius(line0.endSketchPoint, circVal / 2)
         constraints.addCoincident(pointTuple[0], circle)
-        
+
         # Sweep the dogbone
         prof =  sketch.profiles.item(0)
         sweeps = rootComp.features.sweepFeatures
@@ -376,12 +372,12 @@ def createDogbone(circStr, circVal, edge, offStr):
         # Record the timeline index of the last feature createDogbone makes
         endIndex = sw.timelineObject.index
         return startIndex, endIndex
-        
-    
+
+
     except Exception as error:
         ui.messageBox('Failed : ' + str(error))
 
-           
+
 #Explicitly call the run function.
 #stop({'IsApplicationStartup':True})
 #run({'IsApplicationStartup':True})
