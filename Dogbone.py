@@ -322,9 +322,12 @@ def createDogbone(circStr, circVal, edge, offStr):
         # Record the timeline index of the first feature createDogbone makes
         startIndex = plane.timelineObject.index
         inputPlane = None
-
         #create a sketch and project the dogbone's corner onto the sketch
         sketch = sketches.add(plane)
+        
+        # Doesn't really work:
+        sketch.originPoint.deleteMe()
+        
         line1 = sketch.project(edge0)
         line2 = sketch.project(edge1)
         line1 = line1.item(0)
@@ -342,11 +345,28 @@ def createDogbone(circStr, circVal, edge, offStr):
         # This is a temporary point for our Dogbone sketch's centerline to end at
         tempPoint = adsk.core.Point3D.create((pointTuple[1].geometry.x + pointTuple[2].geometry.x)/2,
                                               (pointTuple[1].geometry.y + pointTuple[2].geometry.y)/2, 0)
-        line0 = lines.addByTwoPoints(pointTuple[0], tempPoint)
+        
+        if line1.startSketchPoint.geometry.isEqualTo(line2.startSketchPoint.geometry):
+            tempPoint_start = line1.startSketchPoint
+        elif line1.startSketchPoint.geometry.isEqualTo(line2.endSketchPoint.geometry):
+            tempPoint_start = line1.startSketchPoint
+        elif line1.endSketchPoint.geometry.isEqualTo(line2.startSketchPoint.geometry):
+            tempPoint_start = line1.endSketchPoint
+        elif line1.endSketchPoint.geometry.isEqualTo(line2.endSketchPoint.geometry):
+            tempPoint_start = line1.endSketchPoint
+        else:
+            ui.messageBox("Nope")
+               
+        tempPoint_new = adsk.core.Point3D.create(.1, .1, 0.0)
+    
+        line0 = lines.addByTwoPoints(tempPoint_new, tempPoint)
+        constraints.addCoincident(line0.startSketchPoint, tempPoint_start)
+        
         line0.isConstruction = True
         line1.isConstruction = True
         line2.isConstruction = True
         constraints.addSymmetry(line1, line2, line0)
+        
         # Constrain the length of the centerline to the radius of the desired dogbone
         length = sketch.sketchDimensions.addDistanceDimension(line0.startSketchPoint, line0.endSketchPoint,
                                                      adsk.fusion.DimensionOrientations.AlignedDimensionOrientation,
@@ -357,7 +377,8 @@ def createDogbone(circStr, circVal, edge, offStr):
             length.parameter.expression = circStr +  "/ 2 + " + offStr
         # Create the dogbone's profile
         circle = circles.addByCenterRadius(line0.endSketchPoint, circVal / 2)
-        constraints.addCoincident(pointTuple[0], circle)
+        constraints.addCoincident(line0.startSketchPoint, circle)
+#        sketch.sketchDimensions.addDiameterDimension(circle, findMidPoint(line0))
 
         # Sweep the dogbone
         prof =  sketch.profiles.item(0)
