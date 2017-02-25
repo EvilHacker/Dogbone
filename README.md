@@ -22,3 +22,5 @@ Modified by [Patrick Rainsberry](https://twitter.com/prrainsberry) <br /> (Autod
 Forked from: http://github.com/caseycrogers/Dogbone
 
 See more useful [Fusion 360 Utilities](https://tapnair.github.io/index.html)
+
+[![Analytics](https://ga-beacon.appspot.com/UA-41076924-3/dogbone)](https://github.com/igrigorik/ga-beacon)
