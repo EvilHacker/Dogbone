@@ -18,5 +18,7 @@ Samples are licensed under the terms of the [MIT License](http://opensource.org/
 
 ## Written by
 
-Modified by Patrick Rainsberry <br /> (Autodesk Fusion 360 Business Development)
+Modified by [Patrick Rainsberry](https://twitter.com/prrainsberry) <br /> (Autodesk Fusion 360 Business Development)
 Forked from: http://github.com/caseycrogers/Dogbone
+
+See more useful [Fusion 360 Utilities](https://tapnair.github.io/index.html)
