@@ -1,7 +1,7 @@
 # Dogbone
 A Fusion360 addin that creates dogbone joints for wood joinery.
 
-![Dogbone Cover](./resources/cover_image.png)
+![Dogbone Cover](./Resources/cover_image.png)
 
 # Installation
 [Click here to download the Add-in](https://github.com/tapnair/Dogbone/releases/download/v1.0/Dogbone.zip)
