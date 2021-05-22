@@ -140,7 +140,7 @@ def run(context):
                                            and math.fabs(bodyEdge.geometry.startPoint.y - bodyEdge.geometry.endPoint.y) <.00001:
 
                                             # Check if its an internal edge
-                                            if (getAngleBetweenFaces(bodyEdge) < math.pi ):
+                                            if 0 < getAngleBetweenFaces(bodyEdge) < math.pi:
                                                 
                                                 # Add edge to the selection 
                                                 edges.append(bodyEdge)
